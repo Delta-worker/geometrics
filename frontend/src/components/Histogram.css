@@ -1,0 +1,50 @@
+.histogram-container {
+  position: relative;
+  background: #0a0a15;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.histogram-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #444;
+  text-align: center;
+  padding: 1rem;
+}
+
+.placeholder-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.5;
+}
+
+.histogram-placeholder p {
+  font-size: 0.875rem;
+}
+
+.histogram-tooltip {
+  position: absolute;
+  background: rgba(22, 33, 62, 0.95);
+  border: 1px solid #0f3460;
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  pointer-events: none;
+  z-index: 10;
+  white-space: nowrap;
+}
+
+.tooltip-value {
+  font-size: 0.75rem;
+  color: #aaa;
+  margin-bottom: 0.25rem;
+}
+
+.tooltip-count {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #e94560;
+}

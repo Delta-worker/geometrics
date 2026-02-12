@@ -1,0 +1,220 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== USER & AUTH ====================
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  avatar    String?
+  role      String   @default("USER") // USER, EDITOR, ADMIN
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  projects      ProjectMember[]
+  datasets      Dataset[]
+  graphs        GraphData[]
+  sessions      Session[]
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ==================== PROJECT ====================
+
+model Project {
+  id           String         @id @default(uuid())
+  name         String
+  description  String?
+  crs          String         @default("EPSG:4326") // Coordinate Reference System
+  ownerId      String
+  isPublic     Boolean        @default(false)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  
+  // Relations
+  owner        User           @relation(fields: [ownerId], references: [id])
+  members      ProjectMember[]
+  datasets     Dataset[]
+  graphs       GraphData[]
+  versions     ProjectVersion[]
+}
+
+model ProjectMember {
+  id        String      @id @default(uuid())
+  projectId String
+  userId    String
+  role      String      @default("VIEWER") // VIEWER, EDITOR, ADMIN
+  joinedAt  DateTime    @default(now())
+  
+  project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([projectId, userId])
+}
+
+// ==================== DATASET ====================
+
+model Dataset {
+  id             String          @id @default(uuid())
+  name           String
+  filename       String
+  filePath       String
+  rowCount       Int
+  columnCount    Int
+  status         String          @default("PENDING") // PENDING, MAPPING, READY, PROCESSING, ERROR
+  projectId      String?
+  uploaderId     String
+  metadata       String?         // JSON metadata
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  
+  // Relations
+  project        Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  uploader       User            @relation(fields: [uploaderId], references: [id])
+  columnMappings ColumnMapping[]
+  versions       DatasetVersion[]
+}
+
+model ColumnMapping {
+  id           String   @id @default(uuid())
+  datasetId    String
+  sourceColumn String
+  targetField  String
+  dataType     String   @default("STRING")
+  isRequired   Boolean  @default(false)
+  defaultValue String?  // JSON default value
+  validation   String?  // JSON validation rules
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  dataset      Dataset  @relation(fields: [datasetId], references: [id], onDelete: Cascade)
+}
+
+// ==================== GRAPH DATA ====================
+
+model GraphData {
+  id           String     @id @default(uuid())
+  name         String
+  description  String?
+  projectId    String?
+  ownerId      String
+  graphType    String     // DATA_TREE, NETWORK, HIERARCHY, SCATTER, PARALLEL_COORDS
+  config       String?    // JSON visualization config
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  
+  // Relations
+  project      Project?   @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  owner        User       @relation(fields: [ownerId], references: [id])
+  nodes        GraphNode[]
+  edges        GraphEdge[]
+  versions     GraphVersion[]
+}
+
+model GraphNode {
+  id          String     @id @default(uuid())
+  graphId     String
+  nodeId      String     // External identifier
+  nodeType    String     // SAMPLE, WELL, INTERVAL, LITHOLOGY, STRUCTURE, ASSAY, CUSTOM
+  label       String
+  properties  String     // JSON properties
+  positionX   Float?
+  positionY   Float?
+  style       String?    // JSON visual styling
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  
+  // Relations
+  graph       GraphData  @relation(fields: [graphId], references: [id], onDelete: Cascade)
+  outgoingEdges GraphEdge[] @relation("SourceNode")
+  incomingEdges GraphEdge[] @relation("TargetNode")
+  
+  @@unique([graphId, nodeId])
+}
+
+model GraphEdge {
+  id           String     @id @default(uuid())
+  graphId      String
+  sourceNodeId String
+  targetNodeId String
+  edgeType     String     // PARENT_CHILD, ASSOCIATED, SEQUENTIAL, DEPENDENT, SIMILARITY, CUSTOM
+  weight       Float?
+  properties   String?   // JSON properties
+  style        String?    // JSON visual styling
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  
+  // Relations
+  graph        GraphData  @relation(fields: [graphId], references: [id], onDelete: Cascade)
+  sourceNode   GraphNode  @relation("SourceNode", fields: [sourceNodeId], references: [id], onDelete: Cascade)
+  targetNode   GraphNode @relation("TargetNode", fields: [targetNodeId], references: [id], onDelete: Cascade)
+  
+  @@unique([graphId, sourceNodeId, targetNodeId])
+}
+
+// ==================== VERSION TRACKING ====================
+
+model ProjectVersion {
+  id           String   @id @default(uuid())
+  projectId    String
+  version      Int
+  snapshot     String   // JSON project snapshot
+  changelog    String?
+  createdAt    DateTime @default(now())
+  createdBy    String
+  
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  @@unique([projectId, version])
+}
+
+model DatasetVersion {
+  id           String   @id @default(uuid())
+  datasetId    String
+  version      Int
+  rowCount     Int
+  columnCount  Int
+  snapshot     String?  // JSON schema snapshot
+  changes      String?   // JSON list of changes
+  createdAt    DateTime @default(now())
+  createdBy    String
+  
+  dataset      Dataset  @relation(fields: [datasetId], references: [id], onDelete: Cascade)
+  
+  @@unique([datasetId, version])
+}
+
+model GraphVersion {
+  id           String   @id @default(uuid())
+  graphId      String
+  version      Int
+  nodeCount    Int
+  edgeCount    Int
+  snapshot     String?  // JSON graph structure snapshot
+  changes      String?  // JSON changes
+  createdAt    DateTime @default(now())
+  createdBy    String
+  
+  graph        GraphData @relation(fields: [graphId], references: [id], onDelete: Cascade)
+  
+  @@unique([graphId, version])
+}

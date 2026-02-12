@@ -1,0 +1,295 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-content {
+  background: #1a1a2e;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 700px;
+  max-height: 85vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  background: #16213e;
+  border-bottom: 1px solid #0f3460;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #fff;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.close-btn:hover {
+  color: #fff;
+}
+
+.modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+/* Dropzone styles */
+.dropzone {
+  border: 2px dashed #0f3460;
+  border-radius: 12px;
+  padding: 3rem 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  background: #16213e;
+}
+
+.dropzone.active,
+.dropzone:hover {
+  border-color: #e94560;
+  background: rgba(233, 69, 96, 0.05);
+}
+
+.dropzone-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.dropzone p {
+  margin: 0.5rem 0;
+  color: #aaa;
+}
+
+.dropzone .subtext {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.file-input-label {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: #e94560;
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.file-input-label:hover {
+  background: #d63850;
+  transform: translateY(-1px);
+}
+
+.file-types {
+  font-size: 0.75rem;
+  color: #555;
+  margin-top: 1rem;
+}
+
+.upload-status {
+  margin-top: 1.5rem;
+  text-align: center;
+  color: #888;
+}
+
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #0f3460;
+  border-top-color: #e94560;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Mapping step styles */
+.dataset-info {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #16213e;
+  border-radius: 8px;
+}
+
+.dataset-info h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  color: #fff;
+}
+
+.dataset-info p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #888;
+}
+
+.mapping-table-container {
+  max-height: 350px;
+  overflow-y: auto;
+  border: 1px solid #0f3460;
+  border-radius: 8px;
+}
+
+.mapping-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.mapping-table th,
+.mapping-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #0f3460;
+}
+
+.mapping-table th {
+  background: #0f3460;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #888;
+  position: sticky;
+  top: 0;
+}
+
+.mapping-table tr:hover {
+  background: rgba(15, 52, 96, 0.3);
+}
+
+.mapping-table td:first-child {
+  color: #aaa;
+  font-family: monospace;
+}
+
+.field-input {
+  width: 100%;
+  padding: 0.5rem;
+  background: #1a1a2e;
+  border: 1px solid #0f3460;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 0.875rem;
+}
+
+.field-input:focus {
+  outline: none;
+  border-color: #e94560;
+}
+
+.type-select {
+  padding: 0.5rem;
+  background: #1a1a2e;
+  border: 1px solid #0f3460;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.mapping-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #0f3460;
+}
+
+/* Button styles */
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.btn-primary {
+  background: #e94560;
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #d63850;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: #0f3460;
+  color: #aaa;
+}
+
+.btn-secondary:hover {
+  background: #16213e;
+  color: #fff;
+}
+
+/* Success step styles */
+.success-step {
+  text-align: center;
+  padding: 2rem;
+}
+
+.success-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.success-step h3 {
+  margin: 0 0 0.5rem 0;
+  color: #fff;
+}
+
+.success-step p {
+  color: #888;
+  margin-bottom: 1.5rem;
+}
