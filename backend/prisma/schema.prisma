@@ -23,6 +23,7 @@ model User {
   
   // Relations
   projects      ProjectMember[]
+  ownedProjects Project[]         @relation("ProjectOwner")
   datasets      Dataset[]
   graphs        GraphData[]
   sessions      Session[]
@@ -51,9 +52,10 @@ model Project {
   updatedAt    DateTime       @updatedAt
   
   // Relations
-  owner        User           @relation(fields: [ownerId], references: [id])
+  owner        User           @relation("ProjectOwner", fields: [ownerId], references: [id])
   members      ProjectMember[]
   datasets     Dataset[]
+  domains      Domain[]
   graphs       GraphData[]
   versions     ProjectVersion[]
 }
@@ -71,6 +73,122 @@ model ProjectMember {
   @@unique([projectId, userId])
 }
 
+// ==================== DOMAIN & GEOLOGICAL STRUCTURE ====================
+
+model Domain {
+  id           String     @id @default(uuid())
+  name         String
+  description  String?
+  projectId    String
+  parentId     String?    // Hierarchical structure
+  domainType   String     // LITHOLOGY, STRUCTURE, ALTERATION, MINERALIZATION
+  color        String?    // Display color for visualization
+  metadata     String?    // JSON additional properties
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  
+  // Relations
+  project      Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parent       Domain?    @relation("DomainHierarchy", fields: [parentId], references: [id])
+  children     Domain[]   @relation("DomainHierarchy")
+  wells        Well[]
+  samples      Sample[]
+  
+  @@index([projectId])
+}
+
+model Well {
+  id           String     @id @default(uuid())
+  name         String
+  description  String?
+  domainId     String?
+  collarX      Float?     // Collar coordinates
+  collarY      Float?
+  collarZ      Float?
+  collarCrs    String?    // CRS of collar coordinates
+  azimuth      Float?     // Planned azimuth
+  dip          Float?     // Planned dip
+  totalDepth   Float?
+  status       String     @default("PLANNED") // PLANNED, DRILLING, COMPLETED, ABANDONED
+  metadata     String?    // JSON additional properties
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  
+  // Relations
+  domain       Domain?    @relation(fields: [domainId], references: [id], onDelete: SetNull)
+  surveys      Survey[]
+  samples      Sample[]
+  
+  @@index([domainId])
+}
+
+model Survey {
+  id           String     @id @default(uuid())
+  wellId       String
+  depth         Float      // Measured depth
+  inclination   Float?     // Inclination angle
+  azimuth       Float?     // Azimuth direction
+  tvd           Float?     // True vertical depth
+  northOffset   Float?     // Northing offset from collar
+  eastOffset    Float?     // Easting offset from collar
+  createdAt    DateTime   @default(now())
+  
+  // Relations
+  well         Well       @relation(fields: [wellId], references: [id], onDelete: Cascade)
+  
+  @@index([wellId])
+}
+
+model Sample {
+  id           String     @id @default(uuid())
+  name         String
+  wellId       String?
+  domainId     String?
+  sampleType   String     // ROCK, CUTTINGS, CORE, soil, water
+  depthFrom    Float?     // Start depth
+  depthTo      Float?     // End depth
+  sampleDate   DateTime?
+  lithology    String?
+  description  String?
+  metadata     String?    // JSON additional properties
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  
+  // Relations
+  well         Well?      @relation(fields: [wellId], references: [id], onDelete: SetNull)
+  domain       Domain?    @relation(fields: [domainId], references: [id], onDelete: SetNull)
+  assays       Assay[]
+  
+  @@index([wellId])
+  @@index([domainId])
+}
+
+// ==================== ASSAY DATA ====================
+
+model Assay {
+  id             String     @id @default(uuid())
+  name           String?
+  sampleId       String
+  element        String     // Element/oxide being measured (Au, Cu, Ag, etc.)
+  unit           String     @default("ppm") // ppm, %, g/t, oz/t
+  value          Float      // Measured value
+  detectionLimit Float?     // Detection limit
+  overLimit      Boolean    @default(false) // Value exceeds detection limit
+  method         String?    // Analytical method (fire assay, ICP, etc.)
+  laboratory     String?    // Lab that performed analysis
+  assayDate      DateTime?
+  qualityFlag    String?    // QA/QC flag
+  notes          String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  
+  // Relations
+  sample         Sample     @relation(fields: [sampleId], references: [id], onDelete: Cascade)
+  
+  @@index([sampleId])
+  @@index([element])
+}
+
 // ==================== DATASET ====================
 
 model Dataset {
@@ -82,14 +200,14 @@ model Dataset {
   columnCount    Int
   status         String          @default("PENDING") // PENDING, MAPPING, READY, PROCESSING, ERROR
   projectId      String?
-  uploaderId     String
+  uploaderId     String?
   metadata       String?         // JSON metadata
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   
   // Relations
   project        Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  uploader       User            @relation(fields: [uploaderId], references: [id])
+  uploader       User?           @relation(fields: [uploaderId], references: [id])
   columnMappings ColumnMapping[]
   versions       DatasetVersion[]
 }
