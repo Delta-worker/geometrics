@@ -133,7 +133,7 @@ export default function UploadModal({ isOpen, onClose }) {
                 <p className="file-types">Supports .csv files only</p>
               </div>
               
-              {dataStore.loading && (
+              {dataStore.loading.value && (
                 <div className="upload-status">
                   <span className="spinner"></span>
                   <p>Uploading file...</p>

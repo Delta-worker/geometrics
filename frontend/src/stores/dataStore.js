@@ -95,7 +95,10 @@ class DataStore {
         body: formData
       });
       
-      if (!res.ok) throw new Error('Upload failed');
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Upload failed: ${res.status} ${errorText}`);
+      }
       
       const data = await res.json();
       await this.fetchDatasets();
