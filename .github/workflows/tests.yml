@@ -25,12 +25,25 @@ jobs:
         working-directory: ./backend
         run: npm install
 
+      - name: Setup database
+        working-directory: ./backend
+        run: |
+          npm install -g prisma
+          npx prisma generate
+          npx prisma migrate deploy || true
+
+      - name: Start GeoMetrics server
+        working-directory: ./backend
+        run: node src/index.js &
+        env:
+          DATABASE_URL: file:./dev.db
+          PORT: 3001
+
+      - name: Wait for server
+        run: sleep 5
+
       - name: Run QA Tests
         working-directory: ./backend
         run: node tests/testRunner.js --verbose
-
-      - name: Upload test results
-        if: always()
-        working-directory: ./backend
-        run: |
-          echo "Test completed"
+        env:
+          API_BASE: http://localhost:3001
