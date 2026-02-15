@@ -30,13 +30,14 @@ jobs:
         run: |
           npm install -g prisma
           npx prisma generate
-          npx prisma migrate deploy || true
+          npx prisma db push
 
       - name: Start GeoMetrics server
         working-directory: ./backend
-        run: node src/index.js &
+        run: |
+          DATABASE_URL="file:../dev.db" PORT=3001 node src/index.js &
         env:
-          DATABASE_URL: file:./dev.db
+          DATABASE_URL: file:../dev.db
           PORT: 3001
 
       - name: Wait for server
