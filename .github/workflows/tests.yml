@@ -1,4 +1,4 @@
-# GeoMetrics CI - Debug
+# GeoMetrics CI - Final
 name: GeoMetrics Tests
 
 on: [push, pull_request]
@@ -11,15 +11,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Debug
+      - name: Test
         run: |
           cd backend
           npm install
           npx prisma generate
           rm -f ../dev.db && touch ../dev.db
           DATABASE_URL="file:../dev.db" npx prisma db push
-          ls -la ../dev.db
           PORT=3001 DATABASE_URL="file:../dev.db" node src/index.js &
           sleep 25
-          curl -s http://localhost:3001/health || echo "HEALTH_FAILED"
-          API_BASE=http://localhost:3001 node tests/testRunner.js || echo "TEST_FAILED"
+          API_BASE=http://localhost:3001 node tests/testRunner.js
