@@ -38,8 +38,14 @@ jobs:
       - name: Start server & run tests
         working-directory: ./backend
         run: |
+          set -x
           PORT=3001 node src/index.js &
+          SERVER_PID=$!
           sleep 10
+          curl -s http://localhost:3001/health || echo "Server not responding"
           API_BASE=http://localhost:3001 node tests/testRunner.js --verbose
+          EXIT_CODE=$?
+          kill $SERVER_PID 2>/dev/null || true
+          exit $EXIT_CODE
         env:
           DATABASE_URL: file:../dev.db
