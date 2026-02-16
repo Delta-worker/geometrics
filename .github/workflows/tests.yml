@@ -29,6 +29,7 @@ jobs:
       - name: Setup database
         working-directory: ./backend
         run: |
+          npx prisma generate
           rm -f ../dev.db
           touch ../dev.db
           DATABASE_URL="file:../dev.db" npx prisma db push --skip-generate
