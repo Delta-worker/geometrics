@@ -1,4 +1,4 @@
-# GeoMetrics CI/CD - Feb 2026 - v2
+# GeoMetrics CI/CD - Feb 2026 - v3
 name: GeoMetrics Tests
 
 on: [push, pull_request]
@@ -22,6 +22,16 @@ jobs:
       - name: Run tests
         run: |
           cd backend
+          echo "Starting server..."
           PORT=3001 DATABASE_URL="file:../dev.db" node src/index.js &
-          sleep 10
+          SERVER_PID=$!
+          echo "Server PID: $SERVER_PID"
+          sleep 15
+          echo "Checking server..."
+          curl -s http://localhost:3001/health || echo "Server failed"
+          echo "Running tests..."
           API_BASE=http://localhost:3001 node tests/testRunner.js
+          EXIT_CODE=$?
+          echo "Tests exit code: $EXIT_CODE"
+          kill $SERVER_PID 2>/dev/null || true
+          exit $EXIT_CODE
