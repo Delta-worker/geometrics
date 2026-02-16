@@ -1,4 +1,4 @@
-# GeoMetrics CI/CD - Feb 2026
+# GeoMetrics CI/CD - Feb 2026 - v2
 name: GeoMetrics Tests
 
 on: [push, pull_request]
@@ -19,9 +19,9 @@ jobs:
           rm -f ../dev.db
           touch ../dev.db
           DATABASE_URL="file:../dev.db" npx prisma db push
-      - name: Server test
+      - name: Run tests
         run: |
           cd backend
-          timeout 20 bash -c 'PORT=3001 DATABASE_URL="file:../dev.db" node src/index.js &'
-          sleep 5
-          curl -s http://localhost:3001/health
+          PORT=3001 DATABASE_URL="file:../dev.db" node src/index.js &
+          sleep 10
+          API_BASE=http://localhost:3001 node tests/testRunner.js
