@@ -10,6 +10,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: file:../dev.db
 
     steps:
       - name: Checkout code
@@ -27,22 +29,21 @@ jobs:
         run: npm install
 
       - name: Setup database
+        working-directory: ./backend
         run: |
-          cd backend
           npm install -g prisma
           npx prisma generate
           cd ..
           rm -f dev.db
           touch dev.db
           cd backend
-          DATABASE_URL="file:../dev.db" npx prisma db push --skip-generate
+          npx prisma db push --skip-generate
 
       - name: Start GeoMetrics server
         working-directory: ./backend
         run: |
-          DATABASE_URL="file:../dev.db" PORT=3001 node src/index.js &
+          PORT=3001 node src/index.js &
         env:
-          DATABASE_URL: file:../dev.db
           PORT: 3001
 
       - name: Wait for server
