@@ -38,11 +38,8 @@ jobs:
       - name: Start server & run tests
         working-directory: ./backend
         run: |
-          echo "=== Starting server ==="
           PORT=3001 node src/index.js &
-          echo "=== Waiting for server ==="
           sleep 10
-          echo "=== Running tests ==="
-          API_BASE=http://localhost:3001 node tests/testRunner.js --verbose || true
+          API_BASE=http://localhost:3001 node tests/testRunner.js --verbose
         env:
           DATABASE_URL: file:../dev.db
