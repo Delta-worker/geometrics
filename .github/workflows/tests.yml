@@ -31,7 +31,7 @@ jobs:
         run: |
           npm install -g prisma
           npx prisma generate
-          npx prisma db push
+          cd .. && npx prisma db push --schema=backend/prisma/schema.prisma
 
       - name: Start GeoMetrics server
         working-directory: ./backend
