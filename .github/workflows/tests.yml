@@ -12,13 +12,23 @@ jobs:
         with:
           node-version: '22'
       - run: cd backend && npm install
-      - run: |
+      - name: Setup database
+        run: |
           cd backend
+          echo "=== Generating Prisma Client ==="
           npx prisma generate
+          echo "=== Creating database ==="
           rm -f ../dev.db && touch ../dev.db
           DATABASE_URL="file:../dev.db" npx prisma db push
-      - run: |
+          echo "=== Database ready ==="
+      - name: Run tests
+        run: |
           cd backend
+          echo "=== Starting server ==="
           PORT=3001 DATABASE_URL="file:../dev.db" node src/index.js &
-          sleep 10
+          echo "=== Waiting for server ==="
+          sleep 15
+          echo "=== Checking server ==="
+          curl -s http://localhost:3001/health || echo "Server not responding"
+          echo "=== Running tests ==="
           API_BASE=http://localhost:3001 node tests/testRunner.js
