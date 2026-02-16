@@ -27,22 +27,27 @@ jobs:
         run: npm install
 
       - name: Setup database
-        working-directory: ./backend
         run: |
+          cd backend
           npm install -g prisma
           npx prisma generate
-          cd .. && npx prisma db push --schema=backend/prisma/schema.prisma
+          # Create database in root directory as expected by server
+          cd ..
+          rm -f dev.db
+          touch dev.db
+          cd backend
+          DATABASE_URL="../dev.db" npx prisma db push --skip-generate
 
       - name: Start GeoMetrics server
         working-directory: ./backend
         run: |
-          DATABASE_URL="file:../dev.db" PORT=3001 node src/index.js &
+          DATABASE_URL="../dev.db" PORT=3001 node src/index.js &
         env:
-          DATABASE_URL: file:../dev.db
+          DATABASE_URL: ../dev.db
           PORT: 3001
 
       - name: Wait for server
-        run: sleep 5
+        run: sleep 8
 
       - name: Run QA Tests
         working-directory: ./backend
