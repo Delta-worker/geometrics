@@ -1,4 +1,4 @@
-# GeoMetrics CI/CD - Feb 2026 - v4
+# GeoMetrics CI/CD - Feb 2026 - v5
 name: GeoMetrics Tests
 
 on: [push, pull_request]
@@ -12,7 +12,9 @@ jobs:
         with:
           node-version: '22'
       - name: Install dependencies
-        run: cd backend && npm install
+        run: |
+          cd backend
+          npm install
       - name: Database setup
         run: |
           cd backend
@@ -21,15 +23,15 @@ jobs:
           touch ../dev.db
           DATABASE_URL="file:../dev.db" npx prisma db push
       - name: Run tests
-        working-directory: ./backend
         run: |
-          echo "Starting server..."
+          cd backend
+          echo "Starting server on port 3001..."
           PORT=3001 DATABASE_URL="file:../dev.db" node src/index.js &
           SERVER_PID=$!
           echo "Server PID: $SERVER_PID"
           sleep 15
-          echo "Checking server..."
-          curl -s http://localhost:3001/health || echo "Server failed"
+          echo "Checking server health..."
+          curl -s http://localhost:3001/health || echo "Server failed to respond"
           echo "Running tests..."
           API_BASE=http://localhost:3001 node tests/testRunner.js
           EXIT_CODE=$?
